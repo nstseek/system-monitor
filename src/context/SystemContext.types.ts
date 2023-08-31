@@ -13,6 +13,7 @@ type SystemInfo = {
   loadavg: string;
   lsproc: string;
   modules: string;
+  lastUpdatedAt: Date;
 };
 
 type SystemInfoRequest = DefaultHttpRequest<SystemInfo>;

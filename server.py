@@ -8,6 +8,7 @@ class MyHandler(SimpleHTTPRequestHandler):
         if self.path == '/api/data':
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
             
             # Some example data

@@ -13,10 +13,12 @@ export const SystemContextProvider: React.FC<{ children: ReactNode }> = ({
       if (!isLoading && !error && !data) {
         setIsLoading(true);
         try {
-          const data: SystemInfo = await fetch("/api/data").then((request) =>
-            request.json()
-          );
-          setData(data);
+          const data: Omit<SystemInfo, "lastUpdatedAt"> = await fetch(
+            process.env.NODE_ENV === "development"
+              ? "http://localhost:8000/api/data"
+              : "/api/data"
+          ).then((request) => request.json());
+          setData({ ...data, lastUpdatedAt: new Date() });
         } catch (err) {
           setError(String(err));
         } finally {
