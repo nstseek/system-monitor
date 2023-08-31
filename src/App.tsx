@@ -11,8 +11,6 @@ import { useSystemContext } from "./context/useSystemContext";
 function App() {
   const { data, isLoading } = useSystemContext();
 
-  console.log(data);
-
   return (
     <AppContainer>
       <h1>System monitor</h1>

@@ -1,6 +1,8 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import { SystemContext } from "./SystemContext";
 
+const pollingInterval = 1000;
+
 export const SystemContextProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
@@ -8,25 +10,39 @@ export const SystemContextProvider: React.FC<{ children: ReactNode }> = ({
   const [error, setError] = useState<null | string>(null);
   const [data, setData] = useState<SystemInfo | null>(null);
 
+  const [shouldFetchData, setShouldFetchData] = useState(true);
+
   useEffect(() => {
-    (async () => {
-      if (!isLoading && !error && !data) {
-        setIsLoading(true);
-        try {
-          const data: Omit<SystemInfo, "lastUpdatedAt"> = await fetch(
-            process.env.NODE_ENV === "development"
-              ? "http://localhost:8000/api/data"
-              : "/api/data"
-          ).then((request) => request.json());
-          setData({ ...data, lastUpdatedAt: new Date() });
-        } catch (err) {
-          setError(String(err));
-        } finally {
-          setIsLoading(false);
-        }
+    const fetchFunction = async () => {
+      setIsLoading(true);
+      setShouldFetchData(false);
+      try {
+        const data: Omit<SystemInfo, "lastUpdatedAt"> = await fetch(
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:8000/api/data"
+            : "/api/data"
+        ).then((request) => request.json());
+        setData({ ...data, lastUpdatedAt: new Date() });
+      } catch (err) {
+        setError(String(err));
+      } finally {
+        setIsLoading(false);
       }
-    })();
-  }, [isLoading, error, data, setIsLoading, setError, setData]);
+    };
+
+    if (shouldFetchData) {
+      fetchFunction();
+    }
+  }, [setData, setIsLoading, setError, shouldFetchData, setShouldFetchData]);
+
+  useEffect(() => {
+    const scheduleFetch = () => {
+      setShouldFetchData(true);
+      setTimeout(() => scheduleFetch(), pollingInterval);
+    };
+
+    setTimeout(() => scheduleFetch(), pollingInterval);
+  }, [setShouldFetchData]);
 
   return (
     <SystemContext.Provider value={{ isLoading, error, data }}>
